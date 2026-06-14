@@ -27,6 +27,13 @@ const CourseCard = ({ course, index, onPurchase, isAuthenticated, isProcessing }
   const finalPrice = course.finalPrice || course.price || 0;
   const currency = course.currency || 'INR';
   const isFree = course.isFree || !course.isPaid || finalPrice === 0;
+
+console.log("PUBLIC COURSES =", publicCourses);
+console.log("ENROLLED COURSES =", enrolledCourses);
+console.log("DISPLAY COURSES =", displayCourses);
+console.log("AUTH =", isAuthenticated);
+console.log("USER =", user);
+
   
   return (
     <motion.div 
