@@ -2,13 +2,13 @@ import axios from 'axios';
 
 // Create two separate instances
 const studentApi = axios.create({
-  baseURL: '/api',
+  baseURL: 'https://fully-quiz-management-system-backend.onrender.com',
   withCredentials: false,
   headers: { 'Content-Type': 'application/json' }
 });
 
 const adminApi = axios.create({
-  baseURL: '/api',
+  baseURL: 'https://fully-quiz-management-system-backend.onrender.com',
   withCredentials: false,
   headers: { 'Content-Type': 'application/json' }
 });
