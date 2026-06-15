@@ -26,15 +26,20 @@ export const login = createAsyncThunk('auth/login', async (credentials, { reject
 
 export const register = createAsyncThunk('auth/register', async (userData, { rejectWithValue }) => {
   try {
-    const { data } = await api.post('/auth/register', userData);
+    const response = await api.post('/auth/register', userData);
+    console.log('📥 Registration response:', response);
     
-    if (data.success) {
-      toast.success('Registration successful! Please login.');
-      return data.data;
+    const { data } = response;
+    
+    // Check different possible success indicators
+    if (data.success === true || data.status === 'success' || data.message === 'Registration successful') {
+      toast.success(data.message || 'Registration successful! Please login.');
+      return data.data || data.user;
     } else {
       return rejectWithValue(data.message || 'Registration failed');
     }
   } catch (err) {
+    console.error('❌ Registration error:', err.response?.data);
     return rejectWithValue(err.response?.data?.message || 'Registration failed');
   }
 });

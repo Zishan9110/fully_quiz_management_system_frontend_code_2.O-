@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { motion } from 'framer-motion';
 import { register } from '@/store/slices/authSlice';
+import toast from 'react-hot-toast';
 
 export default function RegisterPage() {
   const dispatch = useDispatch();
@@ -32,10 +33,16 @@ export default function RegisterPage() {
     }
     
     const { confirmPassword, ...data } = form;
+    
     const result = await dispatch(register(data));
     
+    console.log('Registration result:', result);
+    
     if (!result.error) {
-      navigate('/login');
+      toast.success('Account created successfully! Redirecting to login...');
+      setTimeout(() => {
+        navigate('/login');
+      }, 2000);
     } else {
       setError(result.payload || 'Registration failed. Please try again.');
     }
