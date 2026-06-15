@@ -28,12 +28,7 @@ const CourseCard = ({ course, index, onPurchase, isAuthenticated, isProcessing }
   const currency = course.currency || 'INR';
   const isFree = course.isFree || !course.isPaid || finalPrice === 0;
 
-console.log("PUBLIC COURSES =", publicCourses);
-console.log("ENROLLED COURSES =", enrolledCourses);
-console.log("DISPLAY COURSES =", displayCourses);
-console.log("AUTH =", isAuthenticated);
-console.log("USER =", user);
-
+  // ✅ Remove the incorrect console logs from here
   
   return (
     <motion.div 
@@ -115,49 +110,38 @@ export default function CoursesPage() {
   const [activeTab, setActiveTab] = useState('marketplace');
   const [processingCourse, setProcessingCourse] = useState(null);
   
-  // Fetch public courses (no auth needed)
-const {
-  data: publicCourses,
-  isLoading: loadingPublic,
-  error,
-  refetch: refetchPublic
-} = useQuery({
-  queryKey: ['public-courses'],
-  queryFn: async () => {
-    const response = await fetch(
-      'https://fully-quiz-management-system-backend.onrender.com/api/courses/public'
-    );
-
-    const data = await response.json();
-
-    console.log("FULL RESPONSE =", data);
-
-    return data.data;
-  },
-  enabled: true
-});
+  // ✅ Fetch public courses - CORRECTED
+  const {
+    data: publicCourses,
+    isLoading: loadingPublic,
+    error: publicError,
+    refetch: refetchPublic
+  } = useQuery({
+    queryKey: ['public-courses'],
+    queryFn: async () => {
+      const response = await fetch(
+        'https://fully-quiz-management-system-backend.onrender.com/api/courses/public'
+      );
+      const data = await response.json();
+      console.log("Public Courses Response:", data);
+      return data.data;
+    },
+    enabled: true
+  });
   
-  // Fetch enrolled courses (only if logged in)
+  // ✅ Fetch enrolled courses - FIXED
   const { 
     data: enrolledCourses, 
     isLoading: loadingEnrolled,
     refetch: refetchEnrolled
   } = useQuery({
     queryKey: ['student-courses', user?._id],
-queryFn: async () => {
-  const response = await fetch(
-    'https://fully-quiz-management-system-backend.onrender.com/api/courses/public'
-  );
-
-  console.log("Response Status:", response.status);
-
-  const data = await response.json();
-
-  console.log("FULL RESPONSE =", data);
-  console.log("DATA FIELD =", data.data);
-
-  return data.data;
-},
+    queryFn: async () => {
+      // ✅ Use studentApi with correct endpoint
+      const response = await studentApi.get('/courses/my-courses');
+      console.log("Enrolled Courses Response:", response.data);
+      return response.data.data;
+    },
     enabled: isAuthenticated && user?.role === 'student'
   });
   
@@ -173,13 +157,11 @@ queryFn: async () => {
       const course = variables;
       
       if (data.isFree) {
-        // Free course - directly enrolled
         toast.success('Successfully enrolled!');
         await refetchEnrolled();
         await refetchPublic();
         setProcessingCourse(null);
       } else if (data.orderId) {
-        // Paid course - open Razorpay
         await openRazorpayCheckout(data, course);
       }
     },
@@ -192,7 +174,6 @@ queryFn: async () => {
   
   const openRazorpayCheckout = async (paymentData, course) => {
     try {
-      // Load Razorpay script if not loaded
       const isScriptLoaded = await loadRazorpayScript();
       if (!isScriptLoaded) {
         toast.error('Failed to load payment gateway. Please refresh and try again.');
@@ -200,7 +181,6 @@ queryFn: async () => {
         return;
       }
       
-      // Store payment ID for verification
       localStorage.setItem('lastPaymentId', paymentData.paymentId);
       
       const options = {
@@ -220,14 +200,12 @@ queryFn: async () => {
         },
         modal: {
           ondismiss: function() {
-            // User closed the modal
             toast.error('Payment cancelled');
             setProcessingCourse(null);
             localStorage.removeItem('lastPaymentId');
           }
         },
         handler: async function(response) {
-          // Payment successful - verify on backend
           try {
             const verifyResponse = await studentApi.post('/payments/verify-payment', {
               razorpay_order_id: response.razorpay_order_id,
@@ -238,10 +216,8 @@ queryFn: async () => {
             
             if (verifyResponse.data.success) {
               toast.success('Payment successful! You are now enrolled.');
-              // Refresh the courses lists
               await refetchEnrolled();
               await refetchPublic();
-              // Switch to "My Courses" tab
               setActiveTab('my');
             } else {
               toast.error('Payment verification failed. Please contact support.');
@@ -292,18 +268,17 @@ queryFn: async () => {
   
   const displayCourses = getCoursesWithEnrollmentStatus();
 
-console.log("PUBLIC COURSES =", publicCourses);
-console.log("ENROLLED COURSES =", enrolledCourses);
-console.log("DISPLAY COURSES =", displayCourses);
-console.log("AUTH =", isAuthenticated);
-console.log("USER =", user);
-console.log("LOADING =", loadingPublic);
-console.log("ERROR =", error);
-console.log("DISPLAY COURSES =", displayCourses);
+  // ✅ Console logs yahan sahi hain (component ke andar, return se pehle)
+  console.log("PUBLIC COURSES =", publicCourses);
+  console.log("ENROLLED COURSES =", enrolledCourses);
+  console.log("DISPLAY COURSES =", displayCourses);
+  console.log("AUTH =", isAuthenticated);
+  console.log("USER =", user);
+  console.log("LOADING PUBLIC =", loadingPublic);
+  console.log("PUBLIC ERROR =", publicError);
   
   return (
     <div className="space-y-6">
-      {/* Tabs - Only show if logged in */}
       {isAuthenticated && (
         <div className="flex gap-2 border-b" style={{ borderColor: 'var(--color-border)' }}>
           <button
@@ -329,7 +304,6 @@ console.log("DISPLAY COURSES =", displayCourses);
         </div>
       )}
       
-      {/* All Courses View */}
       {(!isAuthenticated || activeTab === 'marketplace') && (
         <>
           <div>
@@ -370,7 +344,6 @@ console.log("DISPLAY COURSES =", displayCourses);
         </>
       )}
       
-      {/* My Courses View - Only for logged in users */}
       {isAuthenticated && activeTab === 'my' && (
         <>
           <div>
