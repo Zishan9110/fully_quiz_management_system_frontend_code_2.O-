@@ -8,16 +8,36 @@ export default function RegisterPage() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { loading } = useSelector(s => s.auth);
-  const [form, setForm] = useState({ firstName: '', lastName: '', email: '', password: '', confirmPassword: '' });
+  const [form, setForm] = useState({ 
+    name: '',  // Changed from firstName + lastName to name
+    email: '', 
+    password: '', 
+    confirmPassword: '' 
+  });
   const [error, setError] = useState('');
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
-    if (form.password !== form.confirmPassword) { setError('Passwords do not match'); return; }
+    
+    if (form.password !== form.confirmPassword) { 
+      setError('Passwords do not match'); 
+      return; 
+    }
+    
+    if (form.password.length < 6) {
+      setError('Password must be at least 6 characters');
+      return;
+    }
+    
     const { confirmPassword, ...data } = form;
     const result = await dispatch(register(data));
-    if (!result.error) navigate('/login');
+    
+    if (!result.error) {
+      navigate('/login');
+    } else {
+      setError(result.payload || 'Registration failed. Please try again.');
+    }
   };
 
   return (
@@ -32,35 +52,61 @@ export default function RegisterPage() {
         <div className="card shadow-xl">
           {error && <div className="mb-4 p-3 rounded-lg text-sm text-red-600 bg-red-50 border border-red-200">{error}</div>}
           <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <label className="block text-sm font-medium mb-1.5" style={{ color: 'var(--color-text-primary)' }}>First Name</label>
-                <input className="input-field" placeholder="John" value={form.firstName}
-                  onChange={e => setForm(f => ({ ...f, firstName: e.target.value }))} required />
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-1.5" style={{ color: 'var(--color-text-primary)' }}>Last Name</label>
-                <input className="input-field" placeholder="Doe" value={form.lastName}
-                  onChange={e => setForm(f => ({ ...f, lastName: e.target.value }))} required />
-              </div>
+            <div>
+              <label className="block text-sm font-medium mb-1.5" style={{ color: 'var(--color-text-primary)' }}>Full Name</label>
+              <input 
+                className="input-field" 
+                placeholder="John Doe" 
+                value={form.name}
+                onChange={e => setForm(f => ({ ...f, name: e.target.value }))} 
+                required 
+              />
             </div>
             <div>
               <label className="block text-sm font-medium mb-1.5" style={{ color: 'var(--color-text-primary)' }}>Email</label>
-              <input type="email" className="input-field" placeholder="you@example.com" value={form.email}
-                onChange={e => setForm(f => ({ ...f, email: e.target.value }))} required />
+              <input 
+                type="email" 
+                className="input-field" 
+                placeholder="you@example.com" 
+                value={form.email}
+                onChange={e => setForm(f => ({ ...f, email: e.target.value }))} 
+                required 
+              />
             </div>
             <div>
               <label className="block text-sm font-medium mb-1.5" style={{ color: 'var(--color-text-primary)' }}>Password</label>
-              <input type="password" className="input-field" placeholder="Min. 8 characters" value={form.password}
-                onChange={e => setForm(f => ({ ...f, password: e.target.value }))} required minLength={8} />
+              <input 
+                type="password" 
+                className="input-field" 
+                placeholder="Min. 6 characters" 
+                value={form.password}
+                onChange={e => setForm(f => ({ ...f, password: e.target.value }))} 
+                required 
+                minLength={6}
+              />
             </div>
             <div>
               <label className="block text-sm font-medium mb-1.5" style={{ color: 'var(--color-text-primary)' }}>Confirm Password</label>
-              <input type="password" className="input-field" placeholder="••••••••" value={form.confirmPassword}
-                onChange={e => setForm(f => ({ ...f, confirmPassword: e.target.value }))} required />
+              <input 
+                type="password" 
+                className="input-field" 
+                placeholder="••••••••" 
+                value={form.confirmPassword}
+                onChange={e => setForm(f => ({ ...f, confirmPassword: e.target.value }))} 
+                required 
+              />
             </div>
-            <button type="submit" className="btn-primary w-full justify-center py-3" disabled={loading}>
-              {loading ? <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" /> : 'Create Account'}
+            <button 
+              type="submit" 
+              className="btn-primary w-full justify-center py-3" 
+              disabled={loading}
+            >
+              {loading ? (
+                <span className="flex items-center justify-center gap-2">
+                  <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  Creating account...
+                </span>
+              ) : 'Create Account'}
             </button>
           </form>
           <p className="text-center text-sm mt-6" style={{ color: 'var(--color-text-secondary)' }}>

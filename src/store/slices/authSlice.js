@@ -99,8 +99,8 @@ const authSlice = createSlice({
   name: 'auth',
   initialState: {
     user: null,
-    loading: false,        // For form submissions (login/register)
-    isCheckingAuth: true,  // For initial auth check on app load
+    loading: false,
+    isCheckingAuth: true,
     error: null,
     isAuthenticated: false
   },
@@ -166,6 +166,11 @@ const authSlice = createSlice({
       // Update profile
       .addCase(updateProfile.fulfilled, (state, action) => {
         state.user = action.payload;
+      })
+      
+      // Change password
+      .addCase(changePassword.fulfilled, (state) => {
+        // Password changed successfully, no state change needed
       })
       
       // Logout
