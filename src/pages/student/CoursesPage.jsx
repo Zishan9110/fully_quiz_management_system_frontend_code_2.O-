@@ -138,7 +138,7 @@ export default function CoursesPage() {
   } = useQuery({
     queryKey: ['student-courses', user?._id],
    queryFn: async () => {
-  const response = await fetch('/api/courses/public');
+  const response = await fetch('/https://fully-quiz-management-system-backend.onrender.com/api/courses/public');
 
   console.log('Response Status:', response.status);
 
@@ -281,6 +281,12 @@ export default function CoursesPage() {
   };
   
   const displayCourses = getCoursesWithEnrollmentStatus();
+
+console.log("PUBLIC COURSES =", publicCourses);
+console.log("ENROLLED COURSES =", enrolledCourses);
+console.log("DISPLAY COURSES =", displayCourses);
+console.log("AUTH =", isAuthenticated);
+console.log("USER =", user);
   
   return (
     <div className="space-y-6">
