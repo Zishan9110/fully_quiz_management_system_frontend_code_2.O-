@@ -74,12 +74,16 @@ const adminAuthSlice = createSlice({
   initialState: {
     admin: null,
     loading: false,
+    isCheckingAuth: true,  // ✅ ADD THIS - for initial auth check
     error: null,
     isAuthenticated: false
   },
   reducers: {
     clearError: (state) => {
       state.error = null;
+    },
+    setAdminCheckingDone: (state) => {  // ✅ ADD THIS - to mark checking complete
+      state.isCheckingAuth = false;
     }
   },
   extraReducers: (builder) => {
@@ -103,16 +107,19 @@ const adminAuthSlice = createSlice({
       })
 
       .addCase(getAdminMe.pending, (state) => {
-        state.loading = true;
+        state.isCheckingAuth = true;  // ✅ UPDATE - use isCheckingAuth
+        state.loading = false;
       })
 
       .addCase(getAdminMe.fulfilled, (state, action) => {
+        state.isCheckingAuth = false;  // ✅ UPDATE - use isCheckingAuth
         state.loading = false;
         state.admin = action.payload;
         state.isAuthenticated = true;
       })
 
       .addCase(getAdminMe.rejected, (state, action) => {
+        state.isCheckingAuth = false;  // ✅ UPDATE - use isCheckingAuth
         state.loading = false;
         state.error = action.payload;
         state.admin = null;
@@ -122,9 +129,11 @@ const adminAuthSlice = createSlice({
       .addCase(adminLogout.fulfilled, (state) => {
         state.admin = null;
         state.isAuthenticated = false;
+        state.loading = false;
+        state.isCheckingAuth = false;  // ✅ ADD THIS
       });
   }
 });
 
-export const { clearError } = adminAuthSlice.actions;
+export const { clearError, setAdminCheckingDone } = adminAuthSlice.actions;  // ✅ EXPORT the new action
 export default adminAuthSlice.reducer;
