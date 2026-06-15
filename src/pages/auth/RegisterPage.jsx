@@ -9,7 +9,8 @@ export default function RegisterPage() {
   const navigate = useNavigate();
   const { loading } = useSelector(s => s.auth);
   const [form, setForm] = useState({ 
-    name: '',  // Changed from firstName + lastName to name
+    firstName: '', 
+    lastName: '', 
     email: '', 
     password: '', 
     confirmPassword: '' 
@@ -25,8 +26,8 @@ export default function RegisterPage() {
       return; 
     }
     
-    if (form.password.length < 6) {
-      setError('Password must be at least 6 characters');
+    if (form.password.length < 8) {
+      setError('Password must be at least 8 characters');
       return;
     }
     
@@ -52,15 +53,29 @@ export default function RegisterPage() {
         <div className="card shadow-xl">
           {error && <div className="mb-4 p-3 rounded-lg text-sm text-red-600 bg-red-50 border border-red-200">{error}</div>}
           <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium mb-1.5" style={{ color: 'var(--color-text-primary)' }}>Full Name</label>
-              <input 
-                className="input-field" 
-                placeholder="John Doe" 
-                value={form.name}
-                onChange={e => setForm(f => ({ ...f, name: e.target.value }))} 
-                required 
-              />
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="block text-sm font-medium mb-1.5" style={{ color: 'var(--color-text-primary)' }}>First Name</label>
+                <input 
+                  className="input-field" 
+                  placeholder="John" 
+                  value={form.firstName}
+                  onChange={e => setForm(f => ({ ...f, firstName: e.target.value }))} 
+                  required 
+                  disabled={loading}
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-1.5" style={{ color: 'var(--color-text-primary)' }}>Last Name</label>
+                <input 
+                  className="input-field" 
+                  placeholder="Doe" 
+                  value={form.lastName}
+                  onChange={e => setForm(f => ({ ...f, lastName: e.target.value }))} 
+                  required 
+                  disabled={loading}
+                />
+              </div>
             </div>
             <div>
               <label className="block text-sm font-medium mb-1.5" style={{ color: 'var(--color-text-primary)' }}>Email</label>
@@ -71,6 +86,7 @@ export default function RegisterPage() {
                 value={form.email}
                 onChange={e => setForm(f => ({ ...f, email: e.target.value }))} 
                 required 
+                disabled={loading}
               />
             </div>
             <div>
@@ -78,11 +94,12 @@ export default function RegisterPage() {
               <input 
                 type="password" 
                 className="input-field" 
-                placeholder="Min. 6 characters" 
+                placeholder="Min. 8 characters" 
                 value={form.password}
                 onChange={e => setForm(f => ({ ...f, password: e.target.value }))} 
                 required 
-                minLength={6}
+                minLength={8}
+                disabled={loading}
               />
             </div>
             <div>
@@ -94,6 +111,7 @@ export default function RegisterPage() {
                 value={form.confirmPassword}
                 onChange={e => setForm(f => ({ ...f, confirmPassword: e.target.value }))} 
                 required 
+                disabled={loading}
               />
             </div>
             <button 
