@@ -137,10 +137,17 @@ export default function CoursesPage() {
     refetch: refetchEnrolled
   } = useQuery({
     queryKey: ['student-courses', user?._id],
-    queryFn: async () => {
-      const response = await studentApi.get('/courses/my-courses');
-      return response.data.data;
-    },
+   queryFn: async () => {
+  const response = await fetch('/api/courses/public');
+
+  console.log('Response Status:', response.status);
+
+  const data = await response.json();
+
+  alert(JSON.stringify(data));
+
+  return data.data;
+},
     enabled: isAuthenticated && user?.role === 'student'
   });
   
