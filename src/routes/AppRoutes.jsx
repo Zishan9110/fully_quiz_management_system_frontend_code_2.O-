@@ -1,10 +1,8 @@
-// AppRoutes.jsx - Add payment routes
-
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { useEffect } from 'react';
-import { useDispatch } from 'react-redux';
-import { getMe } from '@/store/slices/authSlice';
-import { getAdminMe } from '@/store/slices/adminAuthSlice';
+import { useDispatch, useSelector } from 'react-redux';
+import { getMe, setCheckingDone } from '@/store/slices/authSlice';
+import { getAdminMe, setAdminCheckingDone } from '@/store/slices/adminAuthSlice';
 
 // Auth Pages
 import LoginPage from '@/pages/auth/LoginPage';
@@ -13,10 +11,6 @@ import ForgotPassword from '@/pages/auth/ForgotPasswordPage';
 import ResetPassword from '@/pages/auth/ResetPasswordPage';
 import VerifyEmail from '@/pages/auth/VerifyEmailPage';
 import AdminLoginPage from '@/pages/auth/AdminLoginPage';
-
-// 🔥 ADD THESE IMPORTS
-import PaymentSuccess from '@/pages/auth/PaymentSuccess';
-import PaymentCancel from '@/pages/auth/PaymentCancel';
 
 // Student Pages
 import StudentLayout from '@/layouts/StudentLayout';
@@ -44,7 +38,7 @@ import AnnouncementsPage from '@/pages/admin/AnnouncementsPage';
 import AdminMessagesPage from '@/pages/admin/MessagesPage';
 import AdminSettingsPage from '@/pages/admin/SettingsPage';
 
-// SIMPLE ROUTE GUARDS
+// Route Guards
 const AdminRoute = ({ children }) => {
   const token = localStorage.getItem('adminAccessToken');
   if (!token) {
@@ -63,6 +57,8 @@ const StudentRoute = ({ children }) => {
 
 export default function AppRoutes() {
   const dispatch = useDispatch();
+  const { isCheckingAuth } = useSelector((state) => state.auth);
+  const { isCheckingAuth: isAdminCheckingAuth } = useSelector((state) => state.adminAuth);
 
   useEffect(() => {
     const userToken = localStorage.getItem('accessToken');
@@ -70,11 +66,28 @@ export default function AppRoutes() {
     
     if (userToken) {
       dispatch(getMe());
+    } else {
+      dispatch(setCheckingDone());
     }
+    
     if (adminToken) {
       dispatch(getAdminMe());
+    } else {
+      dispatch(setAdminCheckingDone());
     }
   }, [dispatch]);
+
+  // Show loading spinner while checking authentication
+  if (isCheckingAuth || isAdminCheckingAuth) {
+    return (
+      <div className="min-h-screen flex items-center justify-center" style={{ background: 'var(--color-bg)' }}>
+        <div 
+          className="w-10 h-10 border-4 border-t-transparent rounded-full animate-spin" 
+          style={{ borderColor: 'var(--color-primary)', borderTopColor: 'transparent' }} 
+        />
+      </div>
+    );
+  }
 
   return (
     <Routes>
@@ -86,10 +99,6 @@ export default function AppRoutes() {
       <Route path="/reset-password/:token" element={<ResetPassword />} />
       <Route path="/verify-email/:token" element={<VerifyEmail />} />
       <Route path="/admin/login" element={<AdminLoginPage />} />
-      
-      {/* 🔥 ADD PAYMENT ROUTES (Public - No Auth Required) */}
-      <Route path="/payment-success" element={<PaymentSuccess />} />
-      <Route path="/payment-cancel" element={<PaymentCancel />} />
 
       {/* Student Routes */}
       <Route path="/student" element={<StudentRoute><StudentLayout /></StudentRoute>}>
@@ -122,6 +131,7 @@ export default function AppRoutes() {
         <Route path="settings" element={<AdminSettingsPage />} />
       </Route>
 
+      {/* 404 - Redirect to login */}
       <Route path="*" element={<Navigate to="/login" replace />} />
     </Routes>
   );

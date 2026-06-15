@@ -99,17 +99,22 @@ const authSlice = createSlice({
   name: 'auth',
   initialState: {
     user: null,
-    loading: false,
+    loading: false,        // For form submissions (login/register)
+    isCheckingAuth: true,  // For initial auth check on app load
     error: null,
     isAuthenticated: false
   },
   reducers: {
     clearError: (state) => {
       state.error = null;
+    },
+    setCheckingDone: (state) => {
+      state.isCheckingAuth = false;
     }
   },
   extraReducers: (builder) => {
     builder
+      // Login cases
       .addCase(login.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -125,6 +130,8 @@ const authSlice = createSlice({
         state.error = action.payload;
         toast.error(action.payload);
       })
+      
+      // Register cases
       .addCase(register.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -137,29 +144,40 @@ const authSlice = createSlice({
         state.error = action.payload;
         toast.error(action.payload);
       })
+      
+      // GetMe cases
       .addCase(getMe.pending, (state) => {
-        state.loading = true;
+        state.isCheckingAuth = true;
+        state.loading = false;
       })
       .addCase(getMe.fulfilled, (state, action) => {
+        state.isCheckingAuth = false;
         state.loading = false;
         state.user = action.payload;
         state.isAuthenticated = true;
       })
       .addCase(getMe.rejected, (state) => {
+        state.isCheckingAuth = false;
         state.loading = false;
         state.user = null;
         state.isAuthenticated = false;
       })
+      
+      // Update profile
       .addCase(updateProfile.fulfilled, (state, action) => {
         state.user = action.payload;
       })
+      
+      // Logout
       .addCase(logout.fulfilled, (state) => {
         state.user = null;
         state.isAuthenticated = false;
+        state.loading = false;
+        state.isCheckingAuth = false;
         toast.success('Logged out successfully');
       });
   }
 });
 
-export const { clearError } = authSlice.actions;
+export const { clearError, setCheckingDone } = authSlice.actions;
 export default authSlice.reducer;

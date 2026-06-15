@@ -269,13 +269,13 @@ export default function CoursesPage() {
   const displayCourses = getCoursesWithEnrollmentStatus();
 
   // ✅ Console logs yahan sahi hain (component ke andar, return se pehle)
-  console.log("PUBLIC COURSES =", publicCourses);
-  console.log("ENROLLED COURSES =", enrolledCourses);
-  console.log("DISPLAY COURSES =", displayCourses);
-  console.log("AUTH =", isAuthenticated);
-  console.log("USER =", user);
-  console.log("LOADING PUBLIC =", loadingPublic);
-  console.log("PUBLIC ERROR =", publicError);
+  // console.log("PUBLIC COURSES =", publicCourses);
+  // console.log("ENROLLED COURSES =", enrolledCourses);
+  // console.log("DISPLAY COURSES =", displayCourses);
+  // console.log("AUTH =", isAuthenticated);
+  // console.log("USER =", user);
+  // console.log("LOADING PUBLIC =", loadingPublic);
+  // console.log("PUBLIC ERROR =", publicError);
   
   return (
     <div className="space-y-6">
