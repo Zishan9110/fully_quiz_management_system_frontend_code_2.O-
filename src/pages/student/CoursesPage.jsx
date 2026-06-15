@@ -137,14 +137,17 @@ export default function CoursesPage() {
     refetch: refetchEnrolled
   } = useQuery({
     queryKey: ['student-courses', user?._id],
-   queryFn: async () => {
-  const response = await fetch('/https://fully-quiz-management-system-backend.onrender.com/api/courses/public');
+queryFn: async () => {
+  const response = await fetch(
+    'https://fully-quiz-management-system-backend.onrender.com/api/courses/public'
+  );
 
-  console.log('Response Status:', response.status);
+  console.log("Response Status:", response.status);
 
   const data = await response.json();
 
-  alert(JSON.stringify(data));
+  console.log("FULL RESPONSE =", data);
+  console.log("DATA FIELD =", data.data);
 
   return data.data;
 },
