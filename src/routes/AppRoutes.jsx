@@ -14,7 +14,7 @@ import ResetPassword from '@/pages/auth/ResetPasswordPage';
 import VerifyEmail from '@/pages/auth/VerifyEmailPage';
 import AdminLoginPage from '@/pages/auth/AdminLoginPage';
 import AuthSuccess from '@/pages/auth/AuthSuccess';
-import AdminAuthSuccess from '@/pages/admin/AdminAuthSuccess'; // 🔥 Admin auth success
+import AdminAuthSuccess from '@/pages/admin/AuthSuccess'; // 🔥 Admin auth success
 import PendingApprovalsPage from '@/pages/admin/PendingApprovalsPage';
 
 // Payment Pages
