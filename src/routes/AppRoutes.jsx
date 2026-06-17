@@ -1,3 +1,5 @@
+// AppRoutes.jsx - Complete with all routes including admin auth success
+
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
@@ -11,9 +13,13 @@ import ForgotPassword from '@/pages/auth/ForgotPasswordPage';
 import ResetPassword from '@/pages/auth/ResetPasswordPage';
 import VerifyEmail from '@/pages/auth/VerifyEmailPage';
 import AdminLoginPage from '@/pages/auth/AdminLoginPage';
-
-// 🔥 ADD THIS IMPORT
 import AuthSuccess from '@/pages/auth/AuthSuccess';
+import AdminAuthSuccess from '@/pages/admin/AdminAuthSuccess'; // 🔥 Admin auth success
+import PendingApprovalsPage from '@/pages/admin/PendingApprovalsPage';
+
+// Payment Pages
+import PaymentSuccess from '@/pages/auth/PaymentSuccess';
+import PaymentCancel from '@/pages/auth/PaymentCancel';
 
 // Student Pages
 import StudentLayout from '@/layouts/StudentLayout';
@@ -41,7 +47,10 @@ import AnnouncementsPage from '@/pages/admin/AnnouncementsPage';
 import AdminMessagesPage from '@/pages/admin/MessagesPage';
 import AdminSettingsPage from '@/pages/admin/SettingsPage';
 
-// Route Guards
+// ============================================
+// ROUTE GUARDS
+// ============================================
+
 const AdminRoute = ({ children }) => {
   const token = localStorage.getItem('adminAccessToken');
   if (!token) {
@@ -57,6 +66,10 @@ const StudentRoute = ({ children }) => {
   }
   return children;
 };
+
+// ============================================
+// MAIN APP ROUTES
+// ============================================
 
 export default function AppRoutes() {
   const dispatch = useDispatch();
@@ -94,7 +107,9 @@ export default function AppRoutes() {
 
   return (
     <Routes>
-      {/* Public Routes */}
+      {/* ========================================== */}
+      {/* PUBLIC ROUTES */}
+      {/* ========================================== */}
       <Route path="/" element={<Navigate to="/login" replace />} />
       <Route path="/login" element={<LoginPage />} />
       <Route path="/register" element={<RegisterPage />} />
@@ -103,10 +118,17 @@ export default function AppRoutes() {
       <Route path="/verify-email/:token" element={<VerifyEmail />} />
       <Route path="/admin/login" element={<AdminLoginPage />} />
       
-      {/* 🔥 ADD THIS - Google OAuth Success Route */}
+      {/* 🔥 Google OAuth Success Routes */}
       <Route path="/auth-success" element={<AuthSuccess />} />
+      <Route path="/admin/auth-success" element={<AdminAuthSuccess />} />
+      
+      {/* Payment Routes */}
+      <Route path="/payment-success" element={<PaymentSuccess />} />
+      <Route path="/payment-cancel" element={<PaymentCancel />} />
 
-      {/* Student Routes */}
+      {/* ========================================== */}
+      {/* STUDENT ROUTES */}
+      {/* ========================================== */}
       <Route path="/student" element={<StudentRoute><StudentLayout /></StudentRoute>}>
         <Route index element={<Navigate to="dashboard" replace />} />
         <Route path="dashboard" element={<StudentDashboard />} />
@@ -121,7 +143,9 @@ export default function AppRoutes() {
         <Route path="settings" element={<SettingsPage />} />
       </Route>
 
-      {/* Admin Routes */}
+      {/* ========================================== */}
+      {/* ADMIN ROUTES */}
+      {/* ========================================== */}
       <Route path="/admin" element={<AdminRoute><AdminLayout /></AdminRoute>}>
         <Route index element={<Navigate to="dashboard" replace />} />
         <Route path="dashboard" element={<AdminDashboard />} />
@@ -135,9 +159,12 @@ export default function AppRoutes() {
         <Route path="announcements" element={<AnnouncementsPage />} />
         <Route path="messages" element={<AdminMessagesPage />} />
         <Route path="settings" element={<AdminSettingsPage />} />
+        <Route path="pending-approvals" element={<PendingApprovalsPage />} />
       </Route>
 
+      {/* ========================================== */}
       {/* 404 - Redirect to login */}
+      {/* ========================================== */}
       <Route path="*" element={<Navigate to="/login" replace />} />
     </Routes>
   );
