@@ -6,15 +6,8 @@ import { login, getMe } from '@/store/slices/authSlice';
 import GoogleLoginButton from '@/components/GoogleLoginButton';
 import { GoogleOAuthProvider } from '@react-oauth/google';
 
-// 🔥 FINAL - Production Client ID Hardcode (No env dependency)
+// 🔥 Production Client ID
 const GOOGLE_CLIENT_ID = '911883997962-ssvol6fp3hak0nf2mah881sn81p5n42f.apps.googleusercontent.com';
-
-// 🔥 Debug logs for production
-console.log('🚀 LoginPage Loaded');
-console.log('🔍 Environment:', import.meta.env.MODE);
-console.log('🔍 Client ID being used:', GOOGLE_CLIENT_ID);
-console.log('🔍 Client ID length:', GOOGLE_CLIENT_ID.length);
-console.log('🔍 Current URL:', window.location.href);
 
 export default function LoginPage() {
   const dispatch = useDispatch();
@@ -24,22 +17,17 @@ export default function LoginPage() {
   const [form, setForm] = useState({ email: '', password: '' });
   const [googleLoading, setGoogleLoading] = useState(false);
 
-  // 🔥 Debug: Check if GoogleOAuthProvider is receiving Client ID
+  // Check for token in URL (OAuth redirect)
   useEffect(() => {
-    console.log('🔍 GoogleOAuthProvider clientId being used:', GOOGLE_CLIENT_ID);
-    
-    // Check for token in URL (OAuth redirect)
     const params = new URLSearchParams(location.search);
     const token = params.get('token');
     const error = params.get('error');
     
     if (error) {
-      console.error('❌ Google auth error:', error);
-      alert('Google authentication failed. Please try again.');
+      console.error('Google auth error:', error);
     }
     
     if (token) {
-      console.log('✅ Token found in URL');
       localStorage.setItem('accessToken', token);
       dispatch(getMe()).then((result) => {
         if (!result.error) {
@@ -59,20 +47,6 @@ export default function LoginPage() {
       navigate('/student/dashboard');
     }
   };
-
-  // 🔥 If Client ID is missing or invalid, show error
-  if (!GOOGLE_CLIENT_ID || GOOGLE_CLIENT_ID === 'your_google_client_id.apps.googleusercontent.com') {
-    console.error('❌ Invalid Google Client ID:', GOOGLE_CLIENT_ID);
-    return (
-      <div className="min-h-screen flex items-center justify-center" style={{ background: 'var(--color-bg)' }}>
-        <div className="text-center p-8 bg-red-50 rounded-xl max-w-md">
-          <h2 className="text-xl font-bold text-red-600 mb-2">⚠️ Configuration Error</h2>
-          <p className="text-gray-600">Google Client ID is not properly configured.</p>
-          <p className="text-sm text-gray-500 mt-2">Please check your environment variables or hardcoded Client ID.</p>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
@@ -109,12 +83,14 @@ export default function LoginPage() {
                 <p className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>Sign in to your student account</p>
               </div>
 
+              {/* Google Login Button */}
               <GoogleLoginButton 
                 isLoading={googleLoading} 
                 setIsLoading={setGoogleLoading}
                 buttonText="Continue with Google"
               />
 
+              {/* Divider */}
               <div className="relative my-6">
                 <div className="absolute inset-0 flex items-center">
                   <div className="w-full border-t" style={{ borderColor: 'rgba(226,232,240,0.6)' }}></div>
@@ -124,6 +100,7 @@ export default function LoginPage() {
                 </div>
               </div>
 
+              {/* Email/Password Form */}
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium mb-1.5" style={{ color: 'var(--color-text-primary)' }}>
