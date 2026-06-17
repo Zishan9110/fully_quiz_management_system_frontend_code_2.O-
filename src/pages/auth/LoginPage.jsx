@@ -6,7 +6,7 @@ import { login, getMe } from '@/store/slices/authSlice';
 import GoogleLoginButton from '@/components/GoogleLoginButton';
 import { GoogleOAuthProvider } from '@react-oauth/google';
 
-// 🔥🔥 DIRECT HARDCODE - No env file needed
+// 🔥 Google Client ID - Hardcoded for production
 const GOOGLE_CLIENT_ID = '961250183314-9t5r7d6hs1r4i26la2ge68h1r7rdsa1d.apps.googleusercontent.com';
 
 export default function LoginPage() {
@@ -15,9 +15,10 @@ export default function LoginPage() {
   const location = useLocation();
   const { loading } = useSelector(s => s.auth);
   const [form, setForm] = useState({ email: '', password: '' });
+  const [error, setError] = useState('');
   const [googleLoading, setGoogleLoading] = useState(false);
 
-  // Check for token in URL (OAuth redirect)
+  // 🔥 Check for OAuth redirect token
   useEffect(() => {
     const params = new URLSearchParams(location.search);
     const token = params.get('token');
@@ -25,7 +26,7 @@ export default function LoginPage() {
     
     if (error) {
       console.error('Google auth error:', error);
-      alert('Google authentication failed. Please try again.');
+      setError('Google authentication failed. Please try again.');
     }
     
     if (token) {
@@ -41,11 +42,17 @@ export default function LoginPage() {
     }
   }, [location, dispatch, navigate]);
 
+  // 🔥 Email/Password Login
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setError('');
+    
     const result = await dispatch(login(form));
+
     if (!result.error) {
       navigate('/student/dashboard');
+    } else {
+      setError(result.payload || 'Login failed. Please try again.');
     }
   };
 
@@ -60,7 +67,7 @@ export default function LoginPage() {
             <h1 className="text-4xl font-bold mb-4">QuizMaster</h1>
             <p className="text-xl text-white/80 mb-8">Enterprise Quiz Management System</p>
             <div className="space-y-4">
-              {['Smart Analytics & Insights','Real-time Leaderboards','AI-Powered Questions (Coming Soon)'].map(f => (
+              {['Smart Analytics & Insights', 'Real-time Leaderboards', 'AI-Powered Questions (Coming Soon)'].map(f => (
                 <div key={f} className="flex items-center gap-3 text-white/80">
                   <div className="w-5 h-5 rounded-full bg-white/20 flex items-center justify-center text-xs">✓</div>
                   <span>{f}</span>
@@ -78,13 +85,13 @@ export default function LoginPage() {
             transition={{ duration: 0.5 }}
             className="w-full max-w-md"
           >
-            <div className="card shadow-xl p-8 bg-white rounded-2xl">
+            <div className="card shadow-xl">
               <div className="text-center mb-8">
                 <h2 className="text-2xl font-bold mb-1" style={{ color: 'var(--color-text-primary)' }}>Welcome back</h2>
                 <p className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>Sign in to your student account</p>
               </div>
-
-              {/* Google Login Button */}
+              
+              {/* 🔥 GOOGLE LOGIN BUTTON */}
               <GoogleLoginButton 
                 isLoading={googleLoading} 
                 setIsLoading={setGoogleLoading}
@@ -100,8 +107,8 @@ export default function LoginPage() {
                   <span className="px-3 bg-white" style={{ color: 'var(--color-text-muted)' }}>Or continue with</span>
                 </div>
               </div>
-
-              {/* Email/Password Form */}
+              
+              {/* 🔥 Email/Password Form (Tumhara original code) */}
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium mb-1.5" style={{ color: 'var(--color-text-primary)' }}>
@@ -109,13 +116,15 @@ export default function LoginPage() {
                   </label>
                   <input 
                     type="email" 
-                    className="w-full px-4 py-2.5 rounded-xl border border-gray-300 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all"
+                    className="input-field" 
                     placeholder="you@example.com"
                     value={form.email} 
                     onChange={e => setForm(f => ({ ...f, email: e.target.value }))} 
                     required 
+                    disabled={loading}
                   />
                 </div>
+                
                 <div>
                   <div className="flex items-center justify-between mb-1.5">
                     <label className="text-sm font-medium" style={{ color: 'var(--color-text-primary)' }}>
@@ -127,16 +136,25 @@ export default function LoginPage() {
                   </div>
                   <input 
                     type="password" 
-                    className="w-full px-4 py-2.5 rounded-xl border border-gray-300 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all"
+                    className="input-field" 
                     placeholder="••••••••"
                     value={form.password} 
                     onChange={e => setForm(f => ({ ...f, password: e.target.value }))} 
                     required 
+                    disabled={loading}
                   />
                 </div>
+                
+                {error && (
+                  <div className="p-3 rounded-lg text-sm text-center" 
+                       style={{ background: 'rgba(239, 68, 68, 0.1)', color: '#ef4444' }}>
+                    {error}
+                  </div>
+                )}
+                
                 <button 
                   type="submit" 
-                  className="w-full bg-primary text-white py-3 rounded-xl font-semibold hover:bg-primary-600 transition-all disabled:opacity-70 disabled:cursor-not-allowed"
+                  className="btn-primary w-full justify-center py-3" 
                   disabled={loading || googleLoading}
                 >
                   {loading ? (
@@ -147,13 +165,14 @@ export default function LoginPage() {
                   ) : 'Sign In'}
                 </button>
               </form>
-
+              
               <p className="text-center text-sm mt-6" style={{ color: 'var(--color-text-secondary)' }}>
                 Don't have an account?{' '}
                 <Link to="/register" className="font-semibold" style={{ color: 'var(--color-primary)' }}>
                   Sign up
                 </Link>
               </p>
+              
               <div className="mt-4 pt-4 border-t text-center" style={{ borderColor: 'rgba(226,232,240,0.6)' }}>
                 <Link to="/admin/login" className="text-xs" style={{ color: 'var(--color-text-muted)' }}>
                   Admin Portal →

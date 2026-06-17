@@ -97,32 +97,24 @@ export const logout = createAsyncThunk('auth/logout', async () => {
 });
 
 // ============ 🔥 GOOGLE LOGIN THUNK ============
+// 🔥 Add this thunk
 export const loginWithGoogle = createAsyncThunk(
   'auth/loginWithGoogle',
   async (googleData, { rejectWithValue }) => {
     try {
-      console.log('📤 Google login attempt with access token');
-      
-      // 🔥 FIX: access_token bhejo backend ko
       const response = await api.post('/auth/google/token', googleData);
-      console.log('📥 Google login response:', response.data);
       
       const { data } = response;
       
       if (data.success && data.token) {
         localStorage.setItem('accessToken', data.token);
         localStorage.setItem('user', JSON.stringify(data.user));
-        
-        toast.success(`Welcome ${data.user.firstName}!`);
         return data.user;
       } else {
         return rejectWithValue(data.message || 'Google login failed');
       }
     } catch (err) {
-      console.error('❌ Google login error:', err.response?.data);
-      const errorMsg = err.response?.data?.message || 'Google login failed. Please try again.';
-      toast.error(errorMsg);
-      return rejectWithValue(errorMsg);
+      return rejectWithValue(err.response?.data?.message || 'Google login failed');
     }
   }
 );

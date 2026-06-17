@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { useGoogleLogin } from '@react-oauth/google';
@@ -9,8 +8,7 @@ import axios from 'axios';
 export default function GoogleLoginButton({ 
   isLoading = false, 
   setIsLoading = () => {},
-  buttonText = 'Continue with Google',
-  className = ''
+  buttonText = 'Continue with Google'
 }) {
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -19,7 +17,6 @@ export default function GoogleLoginButton({
     onSuccess: async (tokenResponse) => {
       try {
         setIsLoading(true);
-        console.log('🔑 Access Token received:', tokenResponse.access_token);
         
         const userInfo = await axios.get(
           'https://www.googleapis.com/oauth2/v3/userinfo',
@@ -29,8 +26,6 @@ export default function GoogleLoginButton({
             }
           }
         );
-        
-        console.log('👤 User Info:', userInfo.data);
         
         const result = await dispatch(loginWithGoogle({
           access_token: tokenResponse.access_token,
@@ -61,11 +56,10 @@ export default function GoogleLoginButton({
       type="button"
       onClick={login}
       disabled={isLoading}
-      className={`w-full flex items-center justify-center gap-3 px-4 py-3 
+      className="w-full flex items-center justify-center gap-3 px-4 py-3 
                  border-2 border-gray-300 rounded-xl text-gray-700 
                  font-medium bg-white hover:bg-gray-50 hover:shadow-lg
-                 transition-all duration-200 disabled:opacity-70 disabled:cursor-not-allowed
-                 ${className}`}
+                 transition-all duration-200 disabled:opacity-70 disabled:cursor-not-allowed"
     >
       <svg className="w-5 h-5 flex-shrink-0" viewBox="0 0 24 24">
         <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z"/>
@@ -75,14 +69,7 @@ export default function GoogleLoginButton({
       </svg>
       
       <span>
-        {isLoading ? (
-          <span className="flex items-center gap-2">
-            <span className="w-4 h-4 border-2 border-gray-600 border-t-transparent rounded-full animate-spin" />
-            Signing in...
-          </span>
-        ) : (
-          buttonText
-        )}
+        {isLoading ? 'Signing in...' : buttonText}
       </span>
     </motion.button>
   );
