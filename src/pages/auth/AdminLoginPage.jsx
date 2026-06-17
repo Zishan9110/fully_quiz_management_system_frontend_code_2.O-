@@ -59,9 +59,12 @@ export default function AdminLoginPage() {
     }
   };
 
+  // ✅ FIXED: No localhost fallback
   const handleGoogleLogin = () => {
     setGoogleLoading(true);
-    const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
+    
+    // Use production URL, NO localhost fallback
+    const apiUrl = import.meta.env.VITE_API_URL || 'https://fully-quiz-management-system-backend.onrender.com/api';
     const redirectUrl = `${apiUrl}/admin/auth/google`;
 
     console.log('🔗 Redirecting to:', redirectUrl);
@@ -88,35 +91,24 @@ export default function AdminLoginPage() {
           className="w-full max-w-md"
         >
           <div className="card shadow-xl border-2 p-8 text-center" style={{ borderColor: 'rgba(251, 191, 36, 0.3)' }}>
-            {/* Icon */}
             <div className="text-6xl mb-4">⏳</div>
-            
-            {/* Title */}
             <h2 className="text-2xl font-bold mb-2" style={{ color: 'var(--color-text-primary)' }}>
               Pending Approval
             </h2>
-            
-            {/* Message */}
             <p className="text-sm mb-4" style={{ color: 'var(--color-text-secondary)' }}>
               {pendingMessage || 'Your admin account is pending approval from super administrator.'}
             </p>
-            
-            {/* Email Notification Box */}
             <div className="bg-blue-50 border border-blue-200 p-4 rounded-lg mb-6">
               <div className="flex items-start gap-3">
                 <span className="text-xl">📧</span>
                 <div className="text-left">
-                  <p className="text-sm font-medium text-blue-800">
-                    Email Notification
-                  </p>
+                  <p className="text-sm font-medium text-blue-800">Email Notification</p>
                   <p className="text-xs text-blue-600">
                     You will receive an email notification once your account is approved by the super administrator.
                   </p>
                 </div>
               </div>
             </div>
-            
-            {/* Contact Support */}
             <div className="bg-gray-50 p-3 rounded-lg mb-6">
               <p className="text-xs text-gray-500">
                 Need help? Contact support at{' '}
@@ -125,8 +117,6 @@ export default function AdminLoginPage() {
                 </a>
               </p>
             </div>
-            
-            {/* Back Button */}
             <button
               onClick={() => {
                 dispatch(clearPending());
@@ -155,7 +145,6 @@ export default function AdminLoginPage() {
         animate={{ opacity: 1, y: 0 }} 
         className="w-full max-w-md"
       >
-        {/* Header */}
         <div className="text-center mb-8">
           <div className="inline-flex w-16 h-16 rounded-2xl items-center justify-center text-white text-3xl mb-4"
             style={{ background: 'linear-gradient(135deg, var(--color-primary-700), var(--color-primary-500))' }}>
@@ -169,10 +158,7 @@ export default function AdminLoginPage() {
           </p>
         </div>
 
-        {/* Login Card */}
         <div className="card shadow-xl border-2" style={{ borderColor: 'rgba(99,102,241,0.2)' }}>
-
-          {/* Google Login Button */}
           <button
             onClick={handleGoogleLogin}
             disabled={googleLoading || loading}
@@ -188,7 +174,6 @@ export default function AdminLoginPage() {
                     style={{ borderColor: 'var(--color-primary-500)' }} />
             ) : (
               <>
-                {/* Google SVG Icon */}
                 <svg className="w-5 h-5" viewBox="0 0 24 24">
                   <path fill="#EA4335" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" />
                   <path fill="#4285F4" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
@@ -200,7 +185,6 @@ export default function AdminLoginPage() {
             )}
           </button>
 
-          {/* Divider */}
           <div className="relative my-6">
             <div className="absolute inset-0 flex items-center">
               <div className="w-full border-t" style={{ borderColor: 'rgba(99,102,241,0.15)' }}></div>
@@ -212,7 +196,6 @@ export default function AdminLoginPage() {
             </div>
           </div>
 
-          {/* Email/Password Form */}
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <label className="block text-sm font-medium mb-1.5" style={{ color: 'var(--color-text-primary)' }}>
@@ -266,7 +249,6 @@ export default function AdminLoginPage() {
             </button>
           </form>
 
-          {/* Forgot Password Link */}
           <div className="mt-4 text-center">
             <a
               href="/admin/forgot-password"
@@ -277,7 +259,6 @@ export default function AdminLoginPage() {
             </a>
           </div>
           
-          {/* Footer */}
           <div className="mt-6 pt-4 border-t text-center" style={{ borderColor: 'rgba(99,102,241,0.1)' }}>
             <p className="text-xs" style={{ color: 'var(--color-text-secondary)' }}>
               Need an admin account? Contact{' '}
