@@ -6,8 +6,15 @@ import { login, getMe } from '@/store/slices/authSlice';
 import GoogleLoginButton from '@/components/GoogleLoginButton';
 import { GoogleOAuthProvider } from '@react-oauth/google';
 
-// 🔥 Google Client ID - Hardcoded for production
-const GOOGLE_CLIENT_ID = '961250183314-9t5r7d6hs1r4i26la2ge68h1r7rdsa1d.apps.googleusercontent.com';
+// 🔥 FINAL - Production Client ID Hardcode (No env dependency)
+const GOOGLE_CLIENT_ID = '911883997962-ssvol6fp3hak0nf2mah881sn81p5n42f.apps.googleusercontent.com';
+
+// 🔥 Debug logs for production
+console.log('🚀 LoginPage Loaded');
+console.log('🔍 Environment:', import.meta.env.MODE);
+console.log('🔍 Client ID being used:', GOOGLE_CLIENT_ID);
+console.log('🔍 Client ID length:', GOOGLE_CLIENT_ID.length);
+console.log('🔍 Current URL:', window.location.href);
 
 export default function LoginPage() {
   const dispatch = useDispatch();
@@ -15,21 +22,24 @@ export default function LoginPage() {
   const location = useLocation();
   const { loading } = useSelector(s => s.auth);
   const [form, setForm] = useState({ email: '', password: '' });
-  const [error, setError] = useState('');
   const [googleLoading, setGoogleLoading] = useState(false);
 
-  // 🔥 Check for OAuth redirect token
+  // 🔥 Debug: Check if GoogleOAuthProvider is receiving Client ID
   useEffect(() => {
+    console.log('🔍 GoogleOAuthProvider clientId being used:', GOOGLE_CLIENT_ID);
+    
+    // Check for token in URL (OAuth redirect)
     const params = new URLSearchParams(location.search);
     const token = params.get('token');
     const error = params.get('error');
     
     if (error) {
-      console.error('Google auth error:', error);
-      setError('Google authentication failed. Please try again.');
+      console.error('❌ Google auth error:', error);
+      alert('Google authentication failed. Please try again.');
     }
     
     if (token) {
+      console.log('✅ Token found in URL');
       localStorage.setItem('accessToken', token);
       dispatch(getMe()).then((result) => {
         if (!result.error) {
@@ -42,19 +52,27 @@ export default function LoginPage() {
     }
   }, [location, dispatch, navigate]);
 
-  // 🔥 Email/Password Login
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError('');
-    
     const result = await dispatch(login(form));
-
     if (!result.error) {
       navigate('/student/dashboard');
-    } else {
-      setError(result.payload || 'Login failed. Please try again.');
     }
   };
+
+  // 🔥 If Client ID is missing or invalid, show error
+  if (!GOOGLE_CLIENT_ID || GOOGLE_CLIENT_ID === 'your_google_client_id.apps.googleusercontent.com') {
+    console.error('❌ Invalid Google Client ID:', GOOGLE_CLIENT_ID);
+    return (
+      <div className="min-h-screen flex items-center justify-center" style={{ background: 'var(--color-bg)' }}>
+        <div className="text-center p-8 bg-red-50 rounded-xl max-w-md">
+          <h2 className="text-xl font-bold text-red-600 mb-2">⚠️ Configuration Error</h2>
+          <p className="text-gray-600">Google Client ID is not properly configured.</p>
+          <p className="text-sm text-gray-500 mt-2">Please check your environment variables or hardcoded Client ID.</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
@@ -67,7 +85,7 @@ export default function LoginPage() {
             <h1 className="text-4xl font-bold mb-4">QuizMaster</h1>
             <p className="text-xl text-white/80 mb-8">Enterprise Quiz Management System</p>
             <div className="space-y-4">
-              {['Smart Analytics & Insights', 'Real-time Leaderboards', 'AI-Powered Questions (Coming Soon)'].map(f => (
+              {['Smart Analytics & Insights','Real-time Leaderboards','AI-Powered Questions (Coming Soon)'].map(f => (
                 <div key={f} className="flex items-center gap-3 text-white/80">
                   <div className="w-5 h-5 rounded-full bg-white/20 flex items-center justify-center text-xs">✓</div>
                   <span>{f}</span>
@@ -85,20 +103,18 @@ export default function LoginPage() {
             transition={{ duration: 0.5 }}
             className="w-full max-w-md"
           >
-            <div className="card shadow-xl">
+            <div className="card shadow-xl p-8 bg-white rounded-2xl">
               <div className="text-center mb-8">
                 <h2 className="text-2xl font-bold mb-1" style={{ color: 'var(--color-text-primary)' }}>Welcome back</h2>
                 <p className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>Sign in to your student account</p>
               </div>
-              
-              {/* 🔥 GOOGLE LOGIN BUTTON */}
+
               <GoogleLoginButton 
                 isLoading={googleLoading} 
                 setIsLoading={setGoogleLoading}
                 buttonText="Continue with Google"
               />
 
-              {/* Divider */}
               <div className="relative my-6">
                 <div className="absolute inset-0 flex items-center">
                   <div className="w-full border-t" style={{ borderColor: 'rgba(226,232,240,0.6)' }}></div>
@@ -107,8 +123,7 @@ export default function LoginPage() {
                   <span className="px-3 bg-white" style={{ color: 'var(--color-text-muted)' }}>Or continue with</span>
                 </div>
               </div>
-              
-              {/* 🔥 Email/Password Form (Tumhara original code) */}
+
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium mb-1.5" style={{ color: 'var(--color-text-primary)' }}>
@@ -116,15 +131,13 @@ export default function LoginPage() {
                   </label>
                   <input 
                     type="email" 
-                    className="input-field" 
+                    className="w-full px-4 py-2.5 rounded-xl border border-gray-300 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all"
                     placeholder="you@example.com"
                     value={form.email} 
                     onChange={e => setForm(f => ({ ...f, email: e.target.value }))} 
                     required 
-                    disabled={loading}
                   />
                 </div>
-                
                 <div>
                   <div className="flex items-center justify-between mb-1.5">
                     <label className="text-sm font-medium" style={{ color: 'var(--color-text-primary)' }}>
@@ -136,25 +149,16 @@ export default function LoginPage() {
                   </div>
                   <input 
                     type="password" 
-                    className="input-field" 
+                    className="w-full px-4 py-2.5 rounded-xl border border-gray-300 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all"
                     placeholder="••••••••"
                     value={form.password} 
                     onChange={e => setForm(f => ({ ...f, password: e.target.value }))} 
                     required 
-                    disabled={loading}
                   />
                 </div>
-                
-                {error && (
-                  <div className="p-3 rounded-lg text-sm text-center" 
-                       style={{ background: 'rgba(239, 68, 68, 0.1)', color: '#ef4444' }}>
-                    {error}
-                  </div>
-                )}
-                
                 <button 
                   type="submit" 
-                  className="btn-primary w-full justify-center py-3" 
+                  className="w-full bg-primary text-white py-3 rounded-xl font-semibold hover:bg-primary-600 transition-all disabled:opacity-70 disabled:cursor-not-allowed"
                   disabled={loading || googleLoading}
                 >
                   {loading ? (
@@ -165,14 +169,13 @@ export default function LoginPage() {
                   ) : 'Sign In'}
                 </button>
               </form>
-              
+
               <p className="text-center text-sm mt-6" style={{ color: 'var(--color-text-secondary)' }}>
                 Don't have an account?{' '}
                 <Link to="/register" className="font-semibold" style={{ color: 'var(--color-primary)' }}>
                   Sign up
                 </Link>
               </p>
-              
               <div className="mt-4 pt-4 border-t text-center" style={{ borderColor: 'rgba(226,232,240,0.6)' }}>
                 <Link to="/admin/login" className="text-xs" style={{ color: 'var(--color-text-muted)' }}>
                   Admin Portal →
