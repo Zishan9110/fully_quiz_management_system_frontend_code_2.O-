@@ -114,7 +114,8 @@ const adminAuthSlice = createSlice({
     error: null,
     isAuthenticated: false,
     isPendingApproval: false,
-    pendingMessage: null
+    pendingMessage: null,
+    isCheckingAuth: true // ✅ Add this
   },
   reducers: {
     clearError: (state) => {
@@ -123,6 +124,10 @@ const adminAuthSlice = createSlice({
     clearPending: (state) => {
       state.isPendingApproval = false;
       state.pendingMessage = null;
+    },
+    // ✅ ADD THIS - setAdminCheckingDone
+    setAdminCheckingDone: (state) => {
+      state.isCheckingAuth = false;
     }
   },
   extraReducers: (builder) => {
@@ -131,17 +136,20 @@ const adminAuthSlice = createSlice({
       .addCase(adminLogin.pending, (state) => {
         state.loading = true;
         state.error = null;
+        state.isCheckingAuth = false;
       })
       .addCase(adminLogin.fulfilled, (state, action) => {
         state.loading = false;
         state.admin = action.payload;
         state.isAuthenticated = true;
         state.isPendingApproval = false;
+        state.isCheckingAuth = false;
         toast.success('Welcome, Admin!');
       })
       .addCase(adminLogin.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
+        state.isCheckingAuth = false;
         toast.error(action.payload);
       })
 
@@ -149,9 +157,11 @@ const adminAuthSlice = createSlice({
       .addCase(adminGoogleLogin.pending, (state) => {
         state.loading = true;
         state.error = null;
+        state.isCheckingAuth = false;
       })
       .addCase(adminGoogleLogin.fulfilled, (state, action) => {
         state.loading = false;
+        state.isCheckingAuth = false;
         
         if (action.payload?.isPending) {
           state.isPendingApproval = true;
@@ -168,23 +178,27 @@ const adminAuthSlice = createSlice({
       .addCase(adminGoogleLogin.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
+        state.isCheckingAuth = false;
         toast.error(action.payload);
       })
 
       // GET ME
       .addCase(getAdminMe.pending, (state) => {
         state.loading = true;
+        state.isCheckingAuth = true;
       })
       .addCase(getAdminMe.fulfilled, (state, action) => {
         state.loading = false;
         state.admin = action.payload;
         state.isAuthenticated = true;
+        state.isCheckingAuth = false;
       })
       .addCase(getAdminMe.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
         state.admin = null;
         state.isAuthenticated = false;
+        state.isCheckingAuth = false;
       })
 
       // LOGOUT
@@ -193,9 +207,10 @@ const adminAuthSlice = createSlice({
         state.isAuthenticated = false;
         state.isPendingApproval = false;
         state.pendingMessage = null;
+        state.isCheckingAuth = false;
       });
   }
 });
 
-export const { clearError, clearPending } = adminAuthSlice.actions;
+export const { clearError, clearPending, setAdminCheckingDone } = adminAuthSlice.actions;
 export default adminAuthSlice.reducer;
