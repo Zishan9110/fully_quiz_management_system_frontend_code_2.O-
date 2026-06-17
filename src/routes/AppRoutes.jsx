@@ -12,6 +12,9 @@ import ResetPassword from '@/pages/auth/ResetPasswordPage';
 import VerifyEmail from '@/pages/auth/VerifyEmailPage';
 import AdminLoginPage from '@/pages/auth/AdminLoginPage';
 
+// 🔥 ADD THIS IMPORT
+import AuthSuccess from '@/pages/auth/AuthSuccess';
+
 // Student Pages
 import StudentLayout from '@/layouts/StudentLayout';
 import StudentDashboard from '@/pages/student/DashboardPage';
@@ -99,6 +102,9 @@ export default function AppRoutes() {
       <Route path="/reset-password/:token" element={<ResetPassword />} />
       <Route path="/verify-email/:token" element={<VerifyEmail />} />
       <Route path="/admin/login" element={<AdminLoginPage />} />
+      
+      {/* 🔥 ADD THIS - Google OAuth Success Route */}
+      <Route path="/auth-success" element={<AuthSuccess />} />
 
       {/* Student Routes */}
       <Route path="/student" element={<StudentRoute><StudentLayout /></StudentRoute>}>

@@ -2,6 +2,7 @@ import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import { studentApi as api } from '@/services/api';
 import toast from 'react-hot-toast';
 
+// ============ EXISTING AUTH THUNKS ============
 export const login = createAsyncThunk('auth/login', async (credentials, { rejectWithValue }) => {
   try {
     console.log('📤 Login attempt:', credentials.email);
@@ -26,20 +27,15 @@ export const login = createAsyncThunk('auth/login', async (credentials, { reject
 
 export const register = createAsyncThunk('auth/register', async (userData, { rejectWithValue }) => {
   try {
-    const response = await api.post('/auth/register', userData);
-    console.log('📥 Registration response:', response);
+    const { data } = await api.post('/auth/register', userData);
     
-    const { data } = response;
-    
-    // Check different possible success indicators
-    if (data.success === true || data.status === 'success' || data.message === 'Registration successful') {
-      toast.success(data.message || 'Registration successful! Please login.');
-      return data.data || data.user;
+    if (data.success) {
+      toast.success('Registration successful! Please login.');
+      return data.data;
     } else {
       return rejectWithValue(data.message || 'Registration failed');
     }
   } catch (err) {
-    console.error('❌ Registration error:', err.response?.data);
     return rejectWithValue(err.response?.data?.message || 'Registration failed');
   }
 });
@@ -100,26 +96,94 @@ export const logout = createAsyncThunk('auth/logout', async () => {
   localStorage.removeItem('user');
 });
 
+// ============ 🔥 GOOGLE LOGIN THUNK ============
+export const loginWithGoogle = createAsyncThunk(
+  'auth/loginWithGoogle',
+  async (googleData, { rejectWithValue }) => {
+    try {
+      console.log('📤 Google login attempt with access token');
+      
+      // 🔥 FIX: access_token bhejo backend ko
+      const response = await api.post('/auth/google/token', googleData);
+      console.log('📥 Google login response:', response.data);
+      
+      const { data } = response;
+      
+      if (data.success && data.token) {
+        localStorage.setItem('accessToken', data.token);
+        localStorage.setItem('user', JSON.stringify(data.user));
+        
+        toast.success(`Welcome ${data.user.firstName}!`);
+        return data.user;
+      } else {
+        return rejectWithValue(data.message || 'Google login failed');
+      }
+    } catch (err) {
+      console.error('❌ Google login error:', err.response?.data);
+      const errorMsg = err.response?.data?.message || 'Google login failed. Please try again.';
+      toast.error(errorMsg);
+      return rejectWithValue(errorMsg);
+    }
+  }
+);
+
+// ============ 🔥 GOOGLE REDIRECT HANDLER ============
+export const handleGoogleRedirect = createAsyncThunk(
+  'auth/handleGoogleRedirect',
+  async (_, { rejectWithValue }) => {
+    try {
+      const params = new URLSearchParams(window.location.search);
+      const token = params.get('token');
+      
+      if (!token) {
+        return rejectWithValue('No token found in URL');
+      }
+      
+      localStorage.setItem('accessToken', token);
+      
+      const { data } = await api.get('/auth/me');
+      
+      if (data.success) {
+        localStorage.setItem('user', JSON.stringify(data.data));
+        toast.success(`Welcome ${data.data.firstName}!`);
+        return data.data;
+      } else {
+        return rejectWithValue('Failed to fetch user data');
+      }
+    } catch (err) {
+      console.error('❌ Google redirect error:', err);
+      return rejectWithValue('Google authentication failed');
+    }
+  }
+);
+
+// ============ AUTH SLICE ============
 const authSlice = createSlice({
   name: 'auth',
   initialState: {
     user: null,
     loading: false,
-    isCheckingAuth: true,
     error: null,
-    isAuthenticated: false
+    isAuthenticated: false,
+    googleLoading: false
   },
   reducers: {
     clearError: (state) => {
       state.error = null;
     },
-    setCheckingDone: (state) => {
-      state.isCheckingAuth = false;
+    resetGoogleLoading: (state) => {
+      state.googleLoading = false;
+    },
+    // 🔥 ADD THIS - setUser reducer for AuthSuccess page
+    setUser: (state, action) => {
+      state.user = action.payload;
+      state.isAuthenticated = true;
+      state.loading = false;
     }
   },
   extraReducers: (builder) => {
     builder
-      // Login cases
+      // ============ LOGIN ============
       .addCase(login.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -133,10 +197,9 @@ const authSlice = createSlice({
       .addCase(login.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
-        toast.error(action.payload);
       })
       
-      // Register cases
+      // ============ REGISTER ============
       .addCase(register.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -150,44 +213,78 @@ const authSlice = createSlice({
         toast.error(action.payload);
       })
       
-      // GetMe cases
+      // ============ GET ME ============
       .addCase(getMe.pending, (state) => {
-        state.isCheckingAuth = true;
-        state.loading = false;
+        state.loading = true;
       })
       .addCase(getMe.fulfilled, (state, action) => {
-        state.isCheckingAuth = false;
         state.loading = false;
         state.user = action.payload;
         state.isAuthenticated = true;
       })
       .addCase(getMe.rejected, (state) => {
-        state.isCheckingAuth = false;
         state.loading = false;
         state.user = null;
         state.isAuthenticated = false;
       })
       
-      // Update profile
+      // ============ UPDATE PROFILE ============
       .addCase(updateProfile.fulfilled, (state, action) => {
         state.user = action.payload;
       })
       
-      // Change password
-      .addCase(changePassword.fulfilled, (state) => {
-        // Password changed successfully, no state change needed
+      // ============ CHANGE PASSWORD ============
+      .addCase(changePassword.rejected, (state, action) => {
+        state.error = action.payload;
       })
       
-      // Logout
+      // ============ LOGOUT ============
       .addCase(logout.fulfilled, (state) => {
         state.user = null;
         state.isAuthenticated = false;
-        state.loading = false;
-        state.isCheckingAuth = false;
+        state.googleLoading = false;
         toast.success('Logged out successfully');
+      })
+      
+      // ============ 🔥 GOOGLE LOGIN ============
+      .addCase(loginWithGoogle.pending, (state) => {
+        state.googleLoading = true;
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(loginWithGoogle.fulfilled, (state, action) => {
+        state.googleLoading = false;
+        state.loading = false;
+        state.user = action.payload;
+        state.isAuthenticated = true;
+        state.error = null;
+      })
+      .addCase(loginWithGoogle.rejected, (state, action) => {
+        state.googleLoading = false;
+        state.loading = false;
+        state.error = action.payload;
+        state.isAuthenticated = false;
+      })
+      
+      // ============ 🔥 GOOGLE REDIRECT ============
+      .addCase(handleGoogleRedirect.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(handleGoogleRedirect.fulfilled, (state, action) => {
+        state.loading = false;
+        state.user = action.payload;
+        state.isAuthenticated = true;
+        state.error = null;
+      })
+      .addCase(handleGoogleRedirect.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+        state.isAuthenticated = false;
       });
   }
 });
 
-export const { clearError, setCheckingDone } = authSlice.actions;
+// ============ EXPORT ACTIONS ============
+export const { clearError, resetGoogleLoading, setUser } = authSlice.actions;
 export default authSlice.reducer;
