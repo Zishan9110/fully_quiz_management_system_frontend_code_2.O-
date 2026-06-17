@@ -27,27 +27,36 @@ export const adminLogin = createAsyncThunk(
 // -----------------------------
 // ADMIN GOOGLE LOGIN
 // -----------------------------
+// adminAuthSlice.js
 export const adminGoogleLogin = createAsyncThunk(
   'adminAuth/googleLogin',
   async (googleData, { rejectWithValue }) => {
     try {
+      console.log('📤 Sending admin Google login request:', googleData);
+      
       const { data } = await api.post('/admin/auth/google-login', googleData);
+      
+      console.log('📥 Response from server:', data);
 
       // Check if admin is pending approval
       if (data.isPending) {
+        console.log('⏳ Admin is pending approval');
         return { isPending: true, message: data.message };
       }
 
       // If approved, store tokens
       if (data.accessToken) {
+        console.log('✅ Admin approved, storing tokens');
         localStorage.setItem('adminAccessToken', data.accessToken);
         localStorage.setItem('adminRefreshToken', data.refreshToken);
         localStorage.setItem('admin', JSON.stringify(data.data));
-        return data.data;
+        return { ...data.data, isAuthenticated: true };
       }
 
+      console.log('⚠️ Unexpected response format:', data);
       return data;
     } catch (err) {
+      console.error('❌ Admin Google login API error:', err);
       return rejectWithValue(
         err.response?.data?.message || err.message || 'Google login failed'
       );

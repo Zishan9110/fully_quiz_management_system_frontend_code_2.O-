@@ -18,6 +18,7 @@ export default function AdminGoogleLoginButton({
     onSuccess: async (tokenResponse) => {
       try {
         setIsLoading(true);
+        console.log('✅ Google login success, fetching user info...');
         
         const userInfo = await axios.get(
           'https://www.googleapis.com/oauth2/v3/userinfo',
@@ -28,6 +29,9 @@ export default function AdminGoogleLoginButton({
           }
         );
         
+        console.log('👤 User Info:', userInfo.data);
+        
+        // Dispatch to Redux
         const result = await dispatch(adminGoogleLogin({
           googleId: userInfo.data.sub,
           email: userInfo.data.email,
@@ -36,34 +40,44 @@ export default function AdminGoogleLoginButton({
           profilePicture: userInfo.data.picture || ''
         }));
         
+        console.log('📤 Result from adminGoogleLogin:', result);
+        
         if (result.error) {
+          console.error('❌ Login error:', result.payload);
           toast.error(result.payload || 'Login failed');
+          setIsLoading(false);
           return;
         }
 
         // Check if pending approval
         if (result.payload?.isPending) {
+          console.log('⏳ Admin pending approval');
           toast.success(result.payload.message || 'Admin registration pending approval');
-          // Show pending UI
           navigate('/admin/login?pending=true&message=' + encodeURIComponent(result.payload.message || 'Pending approval'));
+          setIsLoading(false);
           return;
         }
 
         // Success - redirect to dashboard
-        if (result.payload?.isAuthenticated) {
+        if (result.payload?.isAuthenticated || result.payload?.accessToken) {
+          console.log('✅ Admin login successful, redirecting to dashboard');
           navigate('/admin/dashboard');
           toast.success('Welcome, Admin!');
+        } else {
+          console.log('⚠️ Unexpected response:', result.payload);
+          toast.error('Login failed. Please try again.');
         }
         
+        setIsLoading(false);
+        
       } catch (error) {
-        console.error('Admin Google login error:', error);
+        console.error('❌ Admin Google login error:', error);
         toast.error(error.message || 'Google login failed');
-      } finally {
         setIsLoading(false);
       }
     },
     onError: (error) => {
-      console.error('Google login failed:', error);
+      console.error('❌ Google login failed:', error);
       toast.error('Google login failed. Please try again.');
       setIsLoading(false);
     },
