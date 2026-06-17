@@ -21,7 +21,7 @@ export default function GoogleLoginButton({
         setIsLoading(true);
         console.log('🔑 Access Token received:', tokenResponse.access_token);
         
-        // 🔥 FIX: Access token se user info fetch karo
+        // 🔥 Access token se user info fetch karo
         const userInfo = await axios.get(
           'https://www.googleapis.com/oauth2/v3/userinfo',
           {
@@ -33,7 +33,7 @@ export default function GoogleLoginButton({
         
         console.log('👤 User Info:', userInfo.data);
         
-        // 🔥 FIX: Backend ko access_token bhejo (not credential)
+        // 🔥 Backend ko access_token bhejo
         const result = await dispatch(loginWithGoogle({
           access_token: tokenResponse.access_token,
           userInfo: userInfo.data
@@ -69,6 +69,7 @@ export default function GoogleLoginButton({
                  transition-all duration-200 disabled:opacity-70 disabled:cursor-not-allowed
                  ${className}`}
     >
+      {/* Google Icon */}
       <svg className="w-5 h-5 flex-shrink-0" viewBox="0 0 24 24">
         <path
           fill="#4285F4"

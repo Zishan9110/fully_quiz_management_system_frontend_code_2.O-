@@ -6,8 +6,8 @@ import { login, getMe } from '@/store/slices/authSlice';
 import GoogleLoginButton from '@/components/GoogleLoginButton';
 import { GoogleOAuthProvider } from '@react-oauth/google';
 
-// 🔥 Get client ID from environment or hardcode for testing
-const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || 'your_google_client_id.apps.googleusercontent.com';
+// 🔥 Client ID - Environment se lo, nahi toh fallback
+const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || '';
 
 export default function LoginPage() {
   const dispatch = useDispatch();
@@ -17,7 +17,7 @@ export default function LoginPage() {
   const [form, setForm] = useState({ email: '', password: '' });
   const [googleLoading, setGoogleLoading] = useState(false);
 
-  // Check for token in URL (OAuth redirect)
+  // 🔥 Check for token in URL (OAuth redirect)
   useEffect(() => {
     const params = new URLSearchParams(location.search);
     const token = params.get('token');
@@ -49,8 +49,20 @@ export default function LoginPage() {
     }
   };
 
+  // 🔥 Agar Client ID missing hai toh error show karo
+  if (!GOOGLE_CLIENT_ID) {
+    return (
+      <div className="min-h-screen flex items-center justify-center" style={{ background: 'var(--color-bg)' }}>
+        <div className="text-center p-8 bg-red-50 rounded-xl">
+          <h2 className="text-xl font-bold text-red-600 mb-2">Configuration Error</h2>
+          <p className="text-gray-600">Google Client ID not configured. Please check environment variables.</p>
+          <p className="text-sm text-gray-500 mt-4">VITE_GOOGLE_CLIENT_ID is missing</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    // 🔥 WRAP THE ENTIRE COMPONENT WITH GoogleOAuthProvider
     <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
       <div className="min-h-screen flex" style={{ background: 'var(--color-bg)' }}>
         {/* Left panel */}
@@ -85,7 +97,7 @@ export default function LoginPage() {
                 <p className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>Sign in to your student account</p>
               </div>
 
-              {/* 🔥 Google Login Button - NOW INSIDE PROVIDER */}
+              {/* 🔥 Google Login Button */}
               <GoogleLoginButton 
                 isLoading={googleLoading} 
                 setIsLoading={setGoogleLoading}
