@@ -6,10 +6,8 @@ import { login, getMe } from '@/store/slices/authSlice';
 import GoogleLoginButton from '@/components/GoogleLoginButton';
 import { GoogleOAuthProvider } from '@react-oauth/google';
 
-// 🔥🔥 FINAL FIX: Hardcode Client ID (Vercel build ke liye)
+// 🔥🔥 DIRECT HARDCODE - No env file needed
 const GOOGLE_CLIENT_ID = '961250183314-9t5r7d6hs1r4i26la2ge68h1r7rdsa1d.apps.googleusercontent.com';
-
-console.log('🔍 Google Client ID:', GOOGLE_CLIENT_ID);
 
 export default function LoginPage() {
   const dispatch = useDispatch();
@@ -86,7 +84,7 @@ export default function LoginPage() {
                 <p className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>Sign in to your student account</p>
               </div>
 
-              {/* 🔥 Google Login Button */}
+              {/* Google Login Button */}
               <GoogleLoginButton 
                 isLoading={googleLoading} 
                 setIsLoading={setGoogleLoading}
