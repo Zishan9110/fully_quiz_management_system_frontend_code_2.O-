@@ -97,24 +97,31 @@ export const logout = createAsyncThunk('auth/logout', async () => {
 });
 
 // ============ 🔥 GOOGLE LOGIN THUNK ============
-// 🔥 Add this thunk
 export const loginWithGoogle = createAsyncThunk(
   'auth/loginWithGoogle',
   async (googleData, { rejectWithValue }) => {
     try {
+      console.log('📤 Google login attempt');
+      
       const response = await api.post('/auth/google/token', googleData);
+      console.log('📥 Google login response:', response.data);
       
       const { data } = response;
       
       if (data.success && data.token) {
         localStorage.setItem('accessToken', data.token);
         localStorage.setItem('user', JSON.stringify(data.user));
+        
+        toast.success(`Welcome ${data.user.firstName}!`);
         return data.user;
       } else {
         return rejectWithValue(data.message || 'Google login failed');
       }
     } catch (err) {
-      return rejectWithValue(err.response?.data?.message || 'Google login failed');
+      console.error('❌ Google login error:', err.response?.data);
+      const errorMsg = err.response?.data?.message || 'Google login failed. Please try again.';
+      toast.error(errorMsg);
+      return rejectWithValue(errorMsg);
     }
   }
 );
@@ -157,7 +164,8 @@ const authSlice = createSlice({
     loading: false,
     error: null,
     isAuthenticated: false,
-    googleLoading: false
+    googleLoading: false,
+    isCheckingAuth: true // 🔥 ADD THIS - AppRoutes ke liye
   },
   reducers: {
     clearError: (state) => {
@@ -166,11 +174,14 @@ const authSlice = createSlice({
     resetGoogleLoading: (state) => {
       state.googleLoading = false;
     },
-    // 🔥 ADD THIS - setUser reducer for AuthSuccess page
     setUser: (state, action) => {
       state.user = action.payload;
       state.isAuthenticated = true;
       state.loading = false;
+    },
+    // 🔥 ADD THIS - setCheckingDone reducer
+    setCheckingDone: (state) => {
+      state.isCheckingAuth = false;
     }
   },
   extraReducers: (builder) => {
@@ -184,11 +195,13 @@ const authSlice = createSlice({
         state.loading = false;
         state.user = action.payload;
         state.isAuthenticated = true;
+        state.isCheckingAuth = false;
         toast.success('Welcome back!');
       })
       .addCase(login.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
+        state.isCheckingAuth = false;
       })
       
       // ============ REGISTER ============
@@ -213,11 +226,13 @@ const authSlice = createSlice({
         state.loading = false;
         state.user = action.payload;
         state.isAuthenticated = true;
+        state.isCheckingAuth = false;
       })
       .addCase(getMe.rejected, (state) => {
         state.loading = false;
         state.user = null;
         state.isAuthenticated = false;
+        state.isCheckingAuth = false;
       })
       
       // ============ UPDATE PROFILE ============
@@ -235,6 +250,7 @@ const authSlice = createSlice({
         state.user = null;
         state.isAuthenticated = false;
         state.googleLoading = false;
+        state.isCheckingAuth = false;
         toast.success('Logged out successfully');
       })
       
@@ -250,12 +266,14 @@ const authSlice = createSlice({
         state.user = action.payload;
         state.isAuthenticated = true;
         state.error = null;
+        state.isCheckingAuth = false;
       })
       .addCase(loginWithGoogle.rejected, (state, action) => {
         state.googleLoading = false;
         state.loading = false;
         state.error = action.payload;
         state.isAuthenticated = false;
+        state.isCheckingAuth = false;
       })
       
       // ============ 🔥 GOOGLE REDIRECT ============
@@ -268,15 +286,17 @@ const authSlice = createSlice({
         state.user = action.payload;
         state.isAuthenticated = true;
         state.error = null;
+        state.isCheckingAuth = false;
       })
       .addCase(handleGoogleRedirect.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
         state.isAuthenticated = false;
+        state.isCheckingAuth = false;
       });
   }
 });
 
 // ============ EXPORT ACTIONS ============
-export const { clearError, resetGoogleLoading, setUser } = authSlice.actions;
+export const { clearError, resetGoogleLoading, setUser, setCheckingDone } = authSlice.actions;
 export default authSlice.reducer;
